@@ -1,0 +1,6 @@
+sample_inputs/3.fasta
+sample_inputs/3.out.fasta
+sample_inputs/10011.fasta
+sample_inputs/10011.out.fasta
+sample_inputs/10021.fasta
+sample_inputs/10021.out.fasta

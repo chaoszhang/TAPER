@@ -4,10 +4,19 @@ function correction(fin, fout)
 	temp = split(read(fin, String), "\n")
 	temp = temp[length.(temp) .> 0]
 	c = temp[2:2:length(temp)]
+	if length(c) == 0
+		return
+	end
 	arrc = [Array{Char, 1}(str) for str in c]
 	k = 7
 	n = length(c[1])
 	m = length(c)
+	if n <= k
+		for str in temp
+			println(fout, str)
+		end
+		return
+	end
 	wo = zeros(n, m)
 	for i in 1:n
 		cnt = zeros(128)
@@ -118,6 +127,10 @@ else
 	temp = split(read(ARGS[1], String), "\n")
 	temp = temp[length.(temp) .> 0]
 	for i = 2:2:length(temp)
-		correction(open(temp[i - 1], "r"), open(temp[i], "w"))
+		try
+			correction(open(temp[i - 1], "r"), open(temp[i], "w"))
+		catch
+			println(stderr, "Error happened when processing " + temp[i - 1] + ".")
+		end
 	end
 end
