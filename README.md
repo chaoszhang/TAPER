@@ -8,7 +8,7 @@ Removing misaligned regions
 Please download Julia [here](https://julialang.org/downloads/) and unzip the file using the following command.
 
 ```
-tar -xvzf julia.tar.gz
+tar -xvzf julia*.tar.gz
 ```
 
 ## Running this tool
