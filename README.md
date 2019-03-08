@@ -1,5 +1,6 @@
 # AlignmentErrorRemoval
-Removing misaligned regions
+
+Removing misaligned regions. The algorithm is unpublished for now. 
 
 ## Getting Started
 
