@@ -1,9 +1,12 @@
 import Statistics.median
 
 function correction(fin, fout)
-	temp = split(read(fin, String), "\n")
+	inputText = read(fin, String)
+	temp = split(inputText, ">")
 	temp = temp[length.(temp) .> 0]
-	c = temp[2:2:length(temp)]
+	temp = [split(arr, "\n") for arr in temp]
+	header = [arr[1] for arr in temp]
+	c = [string(arr[2:end]...) for arr in temp]
 	if length(c) == 0
 		return
 	end
@@ -12,9 +15,7 @@ function correction(fin, fout)
 	n = length(c[1])
 	m = length(c)
 	if n <= k
-		for str in temp
-			println(fout, str)
-		end
+		print(fout, inputText)
 		return
 	end
 	wo = zeros(n, m)
@@ -107,7 +108,7 @@ function correction(fin, fout)
 				break
 			end
 		end
-		println(fout, temp[2 * j - 1])
+		println(fout, ">" * header[j])
 		i = 1
 		for t in 1:length(c[j])
 			if c[j][t] == 'X' || c[j][t] == '-'
