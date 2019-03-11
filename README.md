@@ -67,12 +67,8 @@ JULIA_FOLDER/bin/julia correction.jl -l sample_inputs/files2run.txt
 
 ### Running on DNA/RNA
 
-You may want to mask erroneous regions with N or dash instead of X.
+You may want to mask erroneous regions with N instead of X.
 
 ``` bash
 JULIA_FOLDER/bin/julia correction.jl -m N INPUTNAME > OUTPUTNAME
-```
-
-``` bash
-JULIA_FOLDER/bin/julia correction.jl -m - INPUTNAME > OUTPUTNAME
 ```
