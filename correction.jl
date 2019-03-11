@@ -7,7 +7,7 @@ catch
 end
 import Statistics.median
 
-function correction(fin, fout, k, X)
+function correction(fin, fout, k, X, MASK, pvalue)
 	inputText = read(fin, String)
 	temp = split(inputText, ">")
 	temp = temp[length.(temp) .> 0]
@@ -45,8 +45,8 @@ function correction(fin, fout, k, X)
 	wsum = [accumulate(+, arr) for arr in wsorted]
 	f(x, y, n, m) = x^2 / n + (n == m ? 0 : (y - x)^2 / (m - n))
 	var = [f.(arr, arr[end], 1:length(arr), length(arr)) for arr in wsum]
-	iCutoff = [(i > 0.8 * length(arr) ? i : length(arr)) for arr in var for i in [findmax(arr)[2]]]
-	wCutoff = [wsorted[j][iCutoff[j]] for j in 1:m]
+	cutoffFloor = min([(i > (1 - pvalue) * length(var[j]) ? wsorted[j][i] : 3) for j in 1:m for i in [findmax(var[j])[2]]]...)
+	wCutoff = [wsorted[j][findmax(var[j])[2]] for j in 1:m]
 	s = zeros(n - k + 1, m, 2)
 	tiebreaker = zeros(n - k + 1, m, 2)
 	bt = zeros(Int64, n - k + 1, m, 2)
@@ -57,7 +57,7 @@ function correction(fin, fout, k, X)
 		s = zeros(L, 2)
 		tiebreaker = zeros(L, 2)
 		bt = zeros(Int64, L, 2)
-		cutoff = max(wCutoff[j], 3)
+		cutoff = max(wCutoff[j], cutoffFloor, 1)
 		for i in 1:L
 			v = (wj[i] > cutoff ? 0 : 1)
 			if i == 1
@@ -87,7 +87,7 @@ function correction(fin, fout, k, X)
 		str = arrc[j][(arrc[j] .!= '-') .& (arrc[j] .!= X)]
 		icur = L
 		if s[L, 1] < s[L, 2]
-			str[L:L+k-1] .= X
+			str[L:L+k-1] .= MASK
 			bcur = 2
 		else
 			bcur = 1
@@ -99,18 +99,18 @@ function correction(fin, fout, k, X)
 			elseif bcur == 1 && bt[icur, bcur] == 2
 				icur -= k
 				bcur = 2
-				str[icur : icur + k - 1] .= X
+				str[icur : icur + k - 1] .= MASK
 			elseif bcur == 2 && bt[icur, bcur] == 1
 				icur -= k
 				bcur = 1
 			elseif bcur == 2 && bt[icur, bcur] == 2
 				icur -= 1
 				bcur = 2
-				str[icur] = X
+				str[icur] = MASK
 			elseif bcur == 1
 				break
 			else
-				str[1:icur - 1] .= X
+				str[1:icur - 1] .= MASK
 				break
 			end
 		end
@@ -128,6 +128,10 @@ function correction(fin, fout, k, X)
 	end
 end
 
+function ArgParse.parse_item(::Type{Char}, x::AbstractString)
+    return x[1]
+end
+
 function parse_commandline()
     s = ArgParseSettings()
 	
@@ -137,12 +141,20 @@ function parse_commandline()
 			action = :store_true
 		"--mask", "-m"
 			help = "the character to mask erroneous regions"
-			arg_type = String
-			default = "X"
+			arg_type = Char
+			default = 'X'
+		"--any", "-a"
+			help = "the character to denote ambiguous positions or character to denote ANY in the input files"
+			arg_type = Char
+			default = 'X'
 		"--k", "-k"
 			help = "set k for k-mer"
 			arg_type = Int
 			default = 7
+		"--cutoff", "-c"
+			help = "set p-value cutoff to control the minimum aggressiveness of masking"
+			arg_type = Real
+			default = 0.05
 		"input"
 			help = "a fasta file as input (when -l is not set) or a list of input/output pairs (when -l is set)"
 			required = true
@@ -154,15 +166,15 @@ end
 function main()
 	args = parse_commandline()
 	if args["list"] == false
-		correction(open(args["input"], "r"), stdout, args["k"], args["mask"][1])
+		correction(open(args["input"], "r"), stdout, args["k"], args["any"], args["mask"], 1 - args["cutoff"])
 	else
 		temp = split(read(open(args["input"], "r"), String), "\n")
 		temp = temp[length.(temp) .> 0]
 		for i = 2:2:length(temp)
 			try
-				correction(open(temp[i - 1], "r"), open(temp[i], "w"), args["k"], args["mask"][1])
+				correction(open(temp[i - 1], "r"), open(temp[i], "w"), args["k"], args["any"], args["mask"], 1 - args["cutoff"])
 			catch
-				println(stderr, "Error happened when processing " + temp[i - 1] + ".")
+				println(stderr, "Error happened when processing " * temp[i - 1] * ".")
 			end
 		end
 	end
