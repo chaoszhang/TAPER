@@ -18,9 +18,13 @@ In the following, we use `JULIA_FOLDER` for the place you have copied the julia 
 
 ## Running this tool
 
-### Running on one single .fasta/.fa file
+### Showing help message
 
-Make sure the file name ends with `.fasta` or `.fa`
+``` bash
+JULIA_FOLDER/bin/julia correction.jl -h
+```
+
+### Running on one single .fasta/.fa file
 
 ``` bash
 JULIA_FOLDER/bin/julia correction.jl INPUTNAME > OUTPUTNAME
@@ -34,10 +38,10 @@ JULIA_FOLDER/bin/julia correction.jl sample_inputs/3.fasta > sample_inputs/3.out
 
 ### Running on a list of files
 
-You need a LIST file that includes the name of input and output files. Make sure the list name DOES NOT end with `.fasta` or `.fa`. Run:
+You need a `LIST` file that includes the name of input and output files. Run:
 
 ``` bash
-JULIA_FOLDER/bin/julia correction.jl LIST
+JULIA_FOLDER/bin/julia correction.jl -l LIST
 ```
 
 `LIST` should look like this:
@@ -50,7 +54,7 @@ path_to_output_of_input_file_2
 ...
 ```
 
-Thus, For every two lines:
+For every two lines in `LIST`:
 
 - The first line should be the path to the input
 - The second line should be the path to the output of the previous input
@@ -58,5 +62,17 @@ Thus, For every two lines:
 For example, cd to the directory containing correction.jl
 
 ``` bash
-JULIA_FOLDER/bin/julia correction.jl sample_inputs/files2run.txt
+JULIA_FOLDER/bin/julia correction.jl -l sample_inputs/files2run.txt
+```
+
+### Running on DNA/RNA
+
+You may want to mask erroneous regions with N or dash instead of X.
+
+``` bash
+JULIA_FOLDER/bin/julia correction.jl -m N INPUTNAME > OUTPUTNAME
+```
+
+``` bash
+JULIA_FOLDER/bin/julia correction.jl -m - INPUTNAME > OUTPUTNAME
 ```
