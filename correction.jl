@@ -1,6 +1,13 @@
+try
+	using ArgParse
+catch
+	import Pkg
+	Pkg.add("ArgParse")
+	using ArgParse
+end
 import Statistics.median
 
-function correction(fin, fout)
+function correction(fin, fout, k, X)
 	inputText = read(fin, String)
 	temp = split(inputText, ">")
 	temp = temp[length.(temp) .> 0]
@@ -11,7 +18,6 @@ function correction(fin, fout)
 		return
 	end
 	arrc = [Array{Char, 1}(str) for str in c]
-	k = 7
 	n = length(c[1])
 	m = length(c)
 	if n <= k
@@ -24,7 +30,7 @@ function correction(fin, fout)
 		for j in 1:m
 			cnt[UInt8(c[j][i])] += 1
 		end
-		cnt[UInt8('X')] = 0
+		cnt[UInt8(X)] = 0
 		cnt[UInt8('-')] = 0
 		unq = length([1 for t in cnt if t > 0])
 		total = sum(cnt)
@@ -32,7 +38,7 @@ function correction(fin, fout)
 			wo[i, j] = total == 0 ? 0 : total / (unq * cnt[UInt8(c[j][i])])
 		end
 	end
-	w1 = [wo[:,j][(arrc[j] .!= '-') .& (arrc[j] .!= 'X')] for j in 1:m]
+	w1 = [wo[:,j][(arrc[j] .!= '-') .& (arrc[j] .!= X)] for j in 1:m]
 	w = [[median(arr[i:i+k-1]) for i in 1:length(arr)-k+1] for arr in w1]
 	ws = [[sum(arr[i:i+k-1]) for i in 1:length(arr)-k+1] for arr in w1]
 	wsorted = [sort(arr) for arr in w]
@@ -78,10 +84,10 @@ function correction(fin, fout)
 				bt[i, 2] = 1
 			end
 		end
-		str = arrc[j][(arrc[j] .!= '-') .& (arrc[j] .!= 'X')]
+		str = arrc[j][(arrc[j] .!= '-') .& (arrc[j] .!= X)]
 		icur = L
 		if s[L, 1] < s[L, 2]
-			str[L:L+k-1] .= 'X'
+			str[L:L+k-1] .= X
 			bcur = 2
 		else
 			bcur = 1
@@ -93,25 +99,25 @@ function correction(fin, fout)
 			elseif bcur == 1 && bt[icur, bcur] == 2
 				icur -= k
 				bcur = 2
-				str[icur : icur + k - 1] .= 'X'
+				str[icur : icur + k - 1] .= X
 			elseif bcur == 2 && bt[icur, bcur] == 1
 				icur -= k
 				bcur = 1
 			elseif bcur == 2 && bt[icur, bcur] == 2
 				icur -= 1
 				bcur = 2
-				str[icur] = 'X'
+				str[icur] = X
 			elseif bcur == 1
 				break
 			else
-				str[1:icur - 1] .= 'X'
+				str[1:icur - 1] .= X
 				break
 			end
 		end
 		println(fout, ">" * header[j])
 		i = 1
 		for t in 1:length(c[j])
-			if c[j][t] == 'X' || c[j][t] == '-'
+			if c[j][t] == X || c[j][t] == '-'
 				print(fout, c[j][t])
 			else
 				print(fout, str[i])
@@ -122,16 +128,44 @@ function correction(fin, fout)
 	end
 end
 
-if (length(ARGS[1]) > 3 && ARGS[1][end-2:end] == ".fa") || (length(ARGS[1]) > 3 && ARGS[1][end-5:end] == ".fasta")
-	correction(open(ARGS[1], "r"), stdout)
-else
-	temp = split(read(ARGS[1], String), "\n")
-	temp = temp[length.(temp) .> 0]
-	for i = 2:2:length(temp)
-		try
-			correction(open(temp[i - 1], "r"), open(temp[i], "w"))
-		catch
-			println(stderr, "Error happened when processing " + temp[i - 1] + ".")
+function parse_commandline()
+    s = ArgParseSettings()
+	
+	@add_arg_table s begin
+		"--list", "-l"
+			help = "running on a list of inputs; for every two lines of the list file, the first one should be the path to the input and the second should be the path to its output"
+			action = :store_true
+		"--mask", "-m"
+			help = "the character to mask erroneous regions"
+			arg_type = String
+			default = "X"
+		"--k", "-k"
+			help = "set k for k-mer"
+			arg_type = Int
+			default = 7
+		"input"
+			help = "a fasta file as input (when -l is not set) or a list of input/output pairs (when -l is set)"
+			required = true
+	end
+	
+	return parse_args(s)
+end
+
+function main()
+	args = parse_commandline()
+	if args["list"] == false
+		correction(open(args["input"], "r"), stdout, args["k"], args["mask"][1])
+	else
+		temp = split(read(open(args["input"], "r"), String), "\n")
+		temp = temp[length.(temp) .> 0]
+		for i = 2:2:length(temp)
+			try
+				correction(open(temp[i - 1], "r"), open(temp[i], "w"), args["k"], args["mask"][1])
+			catch
+				println(stderr, "Error happened when processing " + temp[i - 1] + ".")
+			end
 		end
 	end
 end
+
+main()
