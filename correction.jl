@@ -7,7 +7,7 @@ catch
 end
 import Statistics.median
 
-function correction(fin, fout, k, X, MASK, pvalue)
+function correction(fin, fout, k, X, MASK, pvalue, pseudocount)
 	inputText = read(fin, String)
 	temp = split(inputText, ">")
 	temp = temp[length.(temp) .> 0]
@@ -46,6 +46,7 @@ function correction(fin, fout, k, X, MASK, pvalue)
 	f(x, y, n, m) = x^2 / n + (n == m ? 0 : (y - x)^2 / (m - n))
 	var = [f.(arr, arr[end], 1:length(arr), length(arr)) for arr in wsum]
 	cutoffFloor = min([(i > (1 - pvalue) * length(var[j]) ? wsorted[j][i] : 3) for j in 1:m for i in [findmax(var[j])[2]]]...)
+	cutoffFloor = max(cutoffFloor, 1 + pseudocount * 5 / 12)
 	wCutoff = [wsorted[j][findmax(var[j])[2]] for j in 1:m]
 	s = zeros(n - k + 1, m, 2)
 	tiebreaker = zeros(n - k + 1, m, 2)
@@ -139,6 +140,9 @@ function parse_commandline()
 		"--list", "-l"
 			help = "running on a list of inputs; for every two lines of the list file, the first one should be the path to the input and the second should be the path to its output"
 			action = :store_true
+		"--nopseudocount", "-n"
+			help = "do not use pseudo-count to remove unaligned regions"
+			action = :store_true
 		"--mask", "-m"
 			help = "the character to mask erroneous regions"
 			arg_type = Char
@@ -166,13 +170,13 @@ end
 function main()
 	args = parse_commandline()
 	if args["list"] == false
-		correction(open(args["input"], "r"), stdout, args["k"], args["any"], args["mask"], 1 - args["cutoff"])
+		correction(open(args["input"], "r"), stdout, args["k"], args["any"], args["mask"], 1 - args["cutoff"], args["nopseudocount"] ? 0 : 1)
 	else
 		temp = split(read(open(args["input"], "r"), String), "\n")
 		temp = temp[length.(temp) .> 0]
 		for i = 2:2:length(temp)
 			try
-				correction(open(temp[i - 1], "r"), open(temp[i], "w"), args["k"], args["any"], args["mask"], 1 - args["cutoff"])
+				correction(open(temp[i - 1], "r"), open(temp[i], "w"), args["k"], args["any"], args["mask"], 1 - args["cutoff"], args["nopseudocount"] ? 0 : 1)
 			catch
 				println(stderr, "Error happened when processing " * temp[i - 1] * ".")
 			end
