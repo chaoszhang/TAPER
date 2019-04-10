@@ -1,3 +1,4 @@
+PROGRAM_VERSION = v"0.1.1-alpha"
 try
 	using ArgParse
 catch
@@ -7,7 +8,7 @@ catch
 end
 import Statistics.median
 
-function correction(fin, fout, k, X, MASK, pvalue, pseudocount)
+function correction(fin, fout, k, X, MASK, pvalue, pseudocount, verbose)
 	inputText = read(fin, String)
 	temp = split(inputText, ">")
 	temp = temp[length.(temp) .> 0]
@@ -47,10 +48,10 @@ function correction(fin, fout, k, X, MASK, pvalue, pseudocount)
 	wsorted = [sort(arr) for arr in w]
 	wsum = [accumulate(+, arr) for arr in wsorted]
 	f(x, y, n, m) = x^2 / n + (n == m ? 0 : (y - x)^2 / (m - n))
-	var = [f.(arr, arr[end], 1:length(arr), length(arr)) for arr in wsum]
-	cutoffFloor = min([(i > (1 - pvalue) * length(var[j]) ? wsorted[j][i] : 3) for j in 1:m for i in [findmax(var[j])[2]]]...)
+	var = [length(arr) > 0 ? f.(arr, arr[end], 1:length(arr), length(arr)) : [] for arr in wsum]
+	cutoffFloor = min([(i > (1 - pvalue) * length(var[j]) ? wsorted[j][i] : 3) for j in 1:m if length(var[j]) > 0 for i in [findmax(var[j])[2]]]...)
 	cutoffFloor = max(cutoffFloor, 1 + pseudocount * 5 / 12)
-	wCutoff = [wsorted[j][findmax(var[j])[2]] for j in 1:m]
+	wCutoff = [length(var[j]) > 0 ? wsorted[j][findmax(var[j])[2]] : 0 for j in 1:m]
 	s = zeros(n - k + 1, m, 2)
 	tiebreaker = zeros(n - k + 1, m, 2)
 	bt = zeros(Int64, n - k + 1, m, 2)
@@ -58,6 +59,15 @@ function correction(fin, fout, k, X, MASK, pvalue, pseudocount)
 		wj = w[j]
 		wsj = ws[j]
 		L = length(wj)
+		if L <= k
+			if verbose
+				println(stderr, "Sequence too short for " * header[j] * " after gap removal; correction skipped.")
+				println(stderr)
+			end
+			println(fout, ">" * header[j])
+			println(fout, c[j])
+			continue
+		end
 		s = zeros(L, 2)
 		tiebreaker = zeros(L, 2)
 		bt = zeros(Int64, L, 2)
@@ -119,29 +129,40 @@ function correction(fin, fout, k, X, MASK, pvalue, pseudocount)
 			end
 		end
 		println(fout, ">" * header[j])
+		strout = ""
 		i = 1
 		for t in 1:length(c[j])
 			if c[j][t] == X || c[j][t] == '-'
-				print(fout, c[j][t])
+				strout *= c[j][t]
 			else
-				print(fout, str[i])
+				strout *= str[i]
 				i += 1
 			end
 		end
-		println(fout)
+		println(fout, strout)
+		if verbose && strout != c[j]
+			println(stderr, "Filtered " * header[j] * "; replaced")
+			println(stderr, c[j])
+			println(stderr, "with")
+			println(stderr, strout)
+			println(stderr)
+		end
 	end
 end
 
 function ArgParse.parse_item(::Type{Char}, x::AbstractString)
-    return x[1]
+	return x[1]
 end
 
 function parse_commandline()
-    s = ArgParseSettings()
+	s = ArgParseSettings()
 	
 	@add_arg_table s begin
 		"--list", "-l"
 			help = "running on a list of inputs; for every two lines of the list file, the first one should be the path to the input and the second should be the path to its output"
+			action = :store_true
+		"--verbose", "-v"
+			help = "print more information to standard error"
 			action = :store_true
 		"--nopseudocount", "-n"
 			help = "do not use pseudo-count to remove unaligned regions"
@@ -171,17 +192,20 @@ function parse_commandline()
 end
 
 function main()
+	println(stderr, "Version " * string(PROGRAM_VERSION))
 	args = parse_commandline()
 	if args["list"] == false
-		correction(open(args["input"], "r"), stdout, args["k"], args["any"], args["mask"], 1 - args["cutoff"], args["nopseudocount"] ? 0 : 1)
+		correction(open(args["input"], "r"), stdout, args["k"], args["any"], args["mask"], 1 - args["cutoff"], args["nopseudocount"] ? 0 : 1, args["verbose"])
 	else
 		temp = split(read(open(args["input"], "r"), String), "\n")
 		temp = temp[length.(temp) .> 0]
 		for i = 2:2:length(temp)
 			try
-				correction(open(temp[i - 1], "r"), open(temp[i], "w"), args["k"], args["any"], args["mask"], 1 - args["cutoff"], args["nopseudocount"] ? 0 : 1)
+				println(stderr, "Processing " * temp[i - 1] * "...")
+				correction(open(temp[i - 1], "r"), open(temp[i], "w"), args["k"], args["any"], args["mask"], 1 - args["cutoff"], args["nopseudocount"] ? 0 : 1, args["verbose"])
 			catch
 				println(stderr, "Error happened when processing " * temp[i - 1] * ".")
+				println(stderr)
 			end
 		end
 	end
