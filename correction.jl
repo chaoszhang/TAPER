@@ -14,6 +14,7 @@ function correction(fin, fout, k, X, MASK, pvalue, pseudocount)
 	temp = [split(arr, "\n") for arr in temp]
 	header = [arr[1] for arr in temp]
 	c = [string(arr[2:end]...) for arr in temp]
+	upperc = [uppercase(str) for str in c]
 	if length(c) == 0
 		return
 	end
@@ -25,10 +26,12 @@ function correction(fin, fout, k, X, MASK, pvalue, pseudocount)
 		return
 	end
 	wo = zeros(n, m)
+	# read sequences and compute per column profiles. 
 	for i in 1:n
 		cnt = zeros(128)
+		# read a column, internally represent in upper case, and count letters
 		for j in 1:m
-			cnt[UInt8(c[j][i])] += 1
+			cnt[UInt8(upperc[j][i])] += 1
 		end
 		cnt[UInt8(X)] = 0
 		cnt[UInt8('-')] = 0
