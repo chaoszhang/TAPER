@@ -67,12 +67,12 @@ JULIA_FOLDER/bin/julia correction.jl -l sample_inputs/files2run.txt
 
 ### Running on DNA/RNA
 
-You may want to mask erroneous regions with N or dash and set "ANY" character to N instead of X.
+You may want to mask erroneous regions with N or dash and set "ANY" character to N instead of X. You may also want a larger k for k-mers.
 
 ``` bash
-JULIA_FOLDER/bin/julia correction.jl -m N -a N INPUTNAME > OUTPUTNAME
+JULIA_FOLDER/bin/julia correction.jl -k 15 -m N -a N INPUTNAME > OUTPUTNAME
 ```
 
 ``` bash
-JULIA_FOLDER/bin/julia correction.jl -m - -a N INPUTNAME > OUTPUTNAME
+JULIA_FOLDER/bin/julia correction.jl -k 15 -m - -a N INPUTNAME > OUTPUTNAME
 ```
