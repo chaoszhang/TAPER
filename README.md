@@ -70,9 +70,9 @@ JULIA_FOLDER/bin/julia correction.jl -l sample_inputs/files2run.txt
 You may want to mask erroneous regions with N or dash and set "ANY" character to N instead of X. You may also want a larger k for k-mers.
 
 ``` bash
-JULIA_FOLDER/bin/julia correction.jl -k 15 -m N -a N INPUTNAME > OUTPUTNAME
+JULIA_FOLDER/bin/julia correction.jl -k 11 -m N -a N INPUTNAME > OUTPUTNAME
 ```
 
 ``` bash
-JULIA_FOLDER/bin/julia correction.jl -k 15 -m - -a N INPUTNAME > OUTPUTNAME
+JULIA_FOLDER/bin/julia correction.jl -k 11 -m - -a N INPUTNAME > OUTPUTNAME
 ```
