@@ -1,4 +1,4 @@
-PROGRAM_VERSION = v"0.1.1-alpha"
+PROGRAM_VERSION = v"0.1.2-alpha"
 try
 	using ArgParse
 catch
