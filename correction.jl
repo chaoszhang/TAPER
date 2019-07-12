@@ -43,7 +43,7 @@ function correction(fin, fout, k, X, MASK, pvalue, pseudocount, verbose)
 		end
 	end
 	w1 = [wo[:,j][(arrc[j] .!= '-') .& (arrc[j] .!= X)] for j in 1:m]
-	w = [[median(arr[i:i+k-1]) for i in 1:length(arr)-k+1] for arr in w1]
+	w = [[sort(arr[i:i+k-1])[k ÷ 3] for i in 1:length(arr)-k+1] for arr in w1]
 	ws = [[sum(arr[i:i+k-1]) for i in 1:length(arr)-k+1] for arr in w1]
 	wsorted = [sort(arr) for arr in w]
 	wsum = [accumulate(+, arr) for arr in wsorted]
