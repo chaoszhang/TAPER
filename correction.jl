@@ -186,11 +186,11 @@ function parse_commandline()
 		"--pCutoff", "-p"
 			help = "set p-value cutoff to control the aggressiveness of masking"
 			arg_type = Float64
-			default = 0.2
+			default = 0.1
 		"--qCutoff", "-q"
 			help = "set q-value cutoff to control the aggressiveness of masking"
 			arg_type = Float64
-			default = 0.2
+			default = 0.1
 		"input"
 			help = "a fasta file as input (when -l is not set) or a list of input/output pairs (when -l is set)"
 			required = true
