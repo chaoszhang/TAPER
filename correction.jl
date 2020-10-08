@@ -1,4 +1,4 @@
-PROGRAM_VERSION = v"0.1.3-alpha"
+PROGRAM_VERSION = v"0.1.4-alpha"
 try
 	using ArgParse
 catch
@@ -8,7 +8,7 @@ catch
 end
 import Statistics.median
 
-function correction(fin, fout, k, X, MASK, pvalue, qvalue, pseudocount, verbose)
+function correction(fin, fout, k, X, MASK, pvalue, qvalue, threshold, verbose)
 	inputText = read(fin, String)
 	temp = split(inputText, ">")
 	temp = temp[length.(temp) .> 0]
@@ -39,7 +39,7 @@ function correction(fin, fout, k, X, MASK, pvalue, qvalue, pseudocount, verbose)
 		unq = length([1 for t in cnt if t > 0])
 		total = sum(cnt)
 		for j in 1:m
-			wo[i, j] = total == 0 ? 0 : (total + pseudocount) / (unq * cnt[UInt8(c[j][i])])
+			wo[i, j] = total == 0 ? 0 : total / (unq * cnt[UInt8(c[j][i])])
 		end
 	end
 	w1 = [wo[:,j][(arrc[j] .!= '-') .& (arrc[j] .!= X)] for j in 1:m]
@@ -53,9 +53,9 @@ function correction(fin, fout, k, X, MASK, pvalue, qvalue, pseudocount, verbose)
 	#cutoffFloor = max(cutoffFloor, 1 + pseudocount * 5 / 12)
 	wCutoff = [length(var[j]) > 0 ? wsorted[j][findmax(var[j])[2]] : 0 for j in 1:m]
 	cutoffSorted = sort([wCutoff[j] for j in 1:m if length(var[j]) > 0])
-	println(stderr, cutoffSorted)
+	#println(stderr, cutoffSorted)
 	cutoffFloor = cutoffSorted[end - floor(Int, length(cutoffSorted) * pvalue)]
-	println(stderr, cutoffFloor)
+	#println(stderr, cutoffFloor)
 	s = zeros(n - k + 1, m, 2)
 	tiebreaker = zeros(n - k + 1, m, 2)
 	bt = zeros(Int64, n - k + 1, m, 2)
@@ -75,7 +75,7 @@ function correction(fin, fout, k, X, MASK, pvalue, qvalue, pseudocount, verbose)
 		s = zeros(L, 2)
 		tiebreaker = zeros(L, 2)
 		bt = zeros(Int64, L, 2)
-		cutoff = max(wCutoff[j], cutoffFloor, wsorted[j][end - floor(Int, length(wsorted[j]) * qvalue)])
+		cutoff = max(wCutoff[j], cutoffFloor, wsorted[j][end - floor(Int, length(wsorted[j]) * qvalue)], threshold)
 		for i in 1:L
 			v = (wj[i] > cutoff ? 0 : 1)
 			if i == 1
@@ -168,9 +168,6 @@ function parse_commandline()
 		"--verbose", "-v"
 			help = "print more information to standard error"
 			action = :store_true
-		"--nopseudocount", "-n"
-			help = "do not use pseudo-count to remove unaligned regions"
-			action = :store_true
 		"--mask", "-m"
 			help = "the character to mask erroneous regions"
 			arg_type = Char
@@ -183,12 +180,16 @@ function parse_commandline()
 			help = "set k for k-mer"
 			arg_type = Int
 			default = 7
+		"--cutoff", "-c"
+			help = "set score cutoff to control the minimum aggressiveness of masking (should be > 1)"
+			arg_type = Float64
+			default = 3.0
 		"--pCutoff", "-p"
-			help = "set p-value cutoff to control the aggressiveness of masking"
+			help = "set p-value cutoff to control the minimum aggressiveness of masking"
 			arg_type = Float64
 			default = 0.1
 		"--qCutoff", "-q"
-			help = "set q-value cutoff to control the aggressiveness of masking"
+			help = "set q-value cutoff to control the minimum aggressiveness of masking"
 			arg_type = Float64
 			default = 0.1
 		"input"
@@ -203,14 +204,14 @@ function main()
 	println(stderr, "Version " * string(PROGRAM_VERSION))
 	args = parse_commandline()
 	if args["list"] == false
-		correction(open(args["input"], "r"), stdout, args["k"], args["any"], args["mask"], args["pCutoff"], args["qCutoff"], args["nopseudocount"] ? 0 : 1, args["verbose"])
+		correction(open(args["input"], "r"), stdout, args["k"], args["any"], args["mask"], args["pCutoff"], args["qCutoff"], args["cutoff"], args["verbose"])
 	else
 		temp = split(read(open(args["input"], "r"), String), "\n")
 		temp = temp[length.(temp) .> 0]
 		for i = 2:2:length(temp)
 			try
 				println(stderr, "Processing " * temp[i - 1] * "...")
-				correction(open(temp[i - 1], "r"), open(temp[i], "w"), args["k"], args["any"], args["mask"], args["pCutoff"], args["qCutoff"], args["nopseudocount"] ? 0 : 1, args["verbose"])
+				correction(open(temp[i - 1], "r"), open(temp[i], "w"), args["k"], args["any"], args["mask"], args["pCutoff"], args["qCutoff"], args["cutoff"], args["verbose"])
 			catch
 				println(stderr, "Error happened when processing " * temp[i - 1] * ".")
 				println(stderr)
