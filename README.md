@@ -1,4 +1,4 @@
-# AlignmentErrorRemoval
+# TAPER
 
 Removing misaligned regions. The algorithm is unpublished for now. 
 
