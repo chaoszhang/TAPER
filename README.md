@@ -76,3 +76,9 @@ JULIA_FOLDER/bin/julia correction.jl -k 11 -m N -a N INPUTNAME > OUTPUTNAME
 ``` bash
 JULIA_FOLDER/bin/julia correction.jl -k 11 -m - -a N INPUTNAME > OUTPUTNAME
 ```
+
+### Running multiple k version
+
+``` bash
+JULIA_FOLDER/bin/julia correction_multi.jl INPUTNAME > OUTPUTNAME
+```
