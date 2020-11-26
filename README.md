@@ -1,5 +1,4 @@
-# TAPER
-
+# Two-dimensional Algorithm for Pinpointing ERrors
 Removing misaligned regions. The algorithm is unpublished for now. 
 
 ## Getting Started
