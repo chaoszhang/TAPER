@@ -1,7 +1,6 @@
-R = [Dict("k"=>5, "p"=>0.25, "q"=>0.1, "L"=>30),
-     Dict("k"=>9, "p"=>0.25, "q"=>0.25, "L"=>54),
-     Dict("k"=>17, "p"=>0.1, "q"=>0.5, "L"=>Inf)]
-
+R = [Dict("k"=>7, "p"=>0.1, "q"=>0.5, "L"=>28),
+     Dict("k"=>9, "p"=>0.4, "q"=>0.6, "L"=>40),
+     Dict("k"=>11, "p"=>0.5, "q"=>0.8, "L"=>Inf)]
 
 PROGRAM_VERSION = v"0.1.4-alpha"
 try
@@ -31,7 +30,7 @@ function correction(c, output, k, X, MASK, pvalue, qvalue, threshold)
 		unq = length([1 for t in cnt if t > 0])
 		total = sum(cnt)
 		for j in 1:m
-			wo[i, j] = total == 0 ? 0 : total / (unq * cnt[UInt8(c[j][i])])
+			wo[i, j] = total == 0 ? 0 : total / (unq * cnt[UInt8(upperc[j][i])])
 		end
 	end
 	w1 = [wo[:,j][(arrc[j] .!= '-') .& (arrc[j] .!= X)] for j in 1:m]

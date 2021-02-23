@@ -39,7 +39,7 @@ function correction(fin, fout, k, X, MASK, pvalue, qvalue, threshold, verbose)
 		unq = length([1 for t in cnt if t > 0])
 		total = sum(cnt)
 		for j in 1:m
-			wo[i, j] = total == 0 ? 0 : total / (unq * cnt[UInt8(c[j][i])])
+			wo[i, j] = total == 0 ? 0 : total / (unq * cnt[UInt8(upperc[j][i])])
 		end
 	end
 	w1 = [wo[:,j][(arrc[j] .!= '-') .& (arrc[j] .!= X)] for j in 1:m]
