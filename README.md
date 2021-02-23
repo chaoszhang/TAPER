@@ -20,19 +20,19 @@ In the following, we use `JULIA_FOLDER` for the place you have copied the julia 
 ### Showing help message
 
 ``` bash
-JULIA_FOLDER/bin/julia correction.jl -h
+JULIA_FOLDER/bin/julia correction_multi.jl -h
 ```
 
 ### Running on one single .fasta/.fa file
 
 ``` bash
-JULIA_FOLDER/bin/julia correction.jl INPUTNAME > OUTPUTNAME
+JULIA_FOLDER/bin/julia correction_multi.jl INPUTNAME > OUTPUTNAME
 ```
 
-For example, cd to the directory containing `correction.jl`
+For example, cd to the directory containing `correction_multi.jl`
 
 ``` bash
-JULIA_FOLDER/bin/julia correction.jl sample_inputs/3.fasta > sample_inputs/3.out.fasta
+JULIA_FOLDER/bin/julia correction_multi.jl sample_inputs/3.fasta > sample_inputs/3.out.fasta
 ```
 
 ### Running on a list of files
@@ -40,7 +40,7 @@ JULIA_FOLDER/bin/julia correction.jl sample_inputs/3.fasta > sample_inputs/3.out
 You need a `LIST` file that includes the name of input and output files. Run:
 
 ``` bash
-JULIA_FOLDER/bin/julia correction.jl -l LIST
+JULIA_FOLDER/bin/julia correction_multi.jl -l LIST
 ```
 
 `LIST` should look like this:
@@ -61,23 +61,29 @@ For every two lines in `LIST`:
 For example, cd to the directory containing correction.jl
 
 ``` bash
-JULIA_FOLDER/bin/julia correction.jl -l sample_inputs/files2run.txt
+JULIA_FOLDER/bin/julia correction_multi.jl -l sample_inputs/files2run.txt
 ```
 
 ### Running on DNA/RNA
 
-You may want to mask erroneous regions with N or dash and set "ANY" character to N instead of X. You may also want a larger k for k-mers.
+You probably want to mask erroneous regions with `N` using `-m` and set "ANY" character to `N` instead of `X` to treat `N` as a missing value using `-n`. 
 
 ``` bash
-JULIA_FOLDER/bin/julia correction.jl -k 11 -m N -a N INPUTNAME > OUTPUTNAME
+JULIA_FOLDER/bin/julia correction_multi.jl -m N -a N INPUTNAME > OUTPUTNAME
 ```
 
+
+### Running single-k version
+
+While we recommend the default multi-k version, the single k version is also available. 
+
+
 ``` bash
-JULIA_FOLDER/bin/julia correction.jl -k 11 -m - -a N INPUTNAME > OUTPUTNAME
+JULIA_FOLDER/bin/julia correction.jl INPUTNAME > OUTPUTNAME
 ```
 
-### Running multiple k version
+You can adjust `-k`. For example, for DNA, you may want a larger k than default.
 
 ``` bash
-JULIA_FOLDER/bin/julia correction_multi.jl INPUTNAME > OUTPUTNAME
+JULIA_FOLDER/bin/julia correction.jl -k 11 -a N -m N INPUTNAME > OUTPUTNAME
 ```
