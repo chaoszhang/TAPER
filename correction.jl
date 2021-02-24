@@ -1,4 +1,4 @@
-PROGRAM_VERSION = v"0.1.5-alpha"
+PROGRAM_VERSION = v"0.1.6-alpha"
 try
 	using ArgParse
 catch
@@ -9,6 +9,7 @@ end
 import Statistics.median
 
 function correction(fin, fout, k, X, MASK, pvalue, qvalue, threshold, verbose)
+	upperx = ('a' <= X && X <= 'z') ? X - 'a' + 'A' : X
 	inputText = read(fin, String)
 	temp = split(inputText, ">")
 	temp = temp[length.(temp) .> 0]
@@ -34,7 +35,7 @@ function correction(fin, fout, k, X, MASK, pvalue, qvalue, threshold, verbose)
 		for j in 1:m
 			cnt[UInt8(upperc[j][i])] += 1
 		end
-		cnt[UInt8(X)] = 0
+		cnt[UInt8(upperx)] = 0
 		cnt[UInt8('-')] = 0
 		unq = length([1 for t in cnt if t > 0])
 		total = sum(cnt)

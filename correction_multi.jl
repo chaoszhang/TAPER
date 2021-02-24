@@ -2,7 +2,7 @@ R = [Dict("k"=>5, "p"=>0.25, "q"=>0.1, "L"=>30),
      Dict("k"=>9, "p"=>0.25, "q"=>0.25, "L"=>54),
      Dict("k"=>17, "p"=>0.1, "q"=>0.5, "L"=>Inf)]
 
-PROGRAM_VERSION = v"0.1.5-alpha"
+PROGRAM_VERSION = v"0.1.6-alpha"
 try
 	using ArgParse
 catch
@@ -13,6 +13,7 @@ end
 import Statistics.median
 
 function correction(c, output, k, X, MASK, pvalue, qvalue, threshold)
+	upperx = ('a' <= X && X <= 'z') ? X - 'a' + 'A' : X
 	upperc = [uppercase(str) for str in c]
 	arrc = [Array{Char, 1}(str) for str in c]
 	n = length(c[1])
@@ -25,7 +26,7 @@ function correction(c, output, k, X, MASK, pvalue, qvalue, threshold)
 		for j in 1:m
 			cnt[UInt8(upperc[j][i])] += 1
 		end
-		cnt[UInt8(X)] = 0
+		cnt[UInt8(upperx)] = 0
 		cnt[UInt8('-')] = 0
 		unq = length([1 for t in cnt if t > 0])
 		total = sum(cnt)
@@ -136,6 +137,9 @@ function parse_commandline()
 	s = ArgParseSettings()
 	
 	@add_arg_table! s begin
+		"--list", "-l"
+			help = "running on a list of inputs; for every two lines of the list file, the first one should be the path to the input and the second should be the path to its output"
+			action = :store_true
 		"--mask", "-m"
 			help = "the character to mask erroneous regions"
 			arg_type = Char
@@ -156,10 +160,8 @@ function parse_commandline()
 	return parse_args(s)
 end
 
-function main()
-	println(stderr, "Version " * string(PROGRAM_VERSION))
-	args = parse_commandline()
-	inputText = read(open(args["input"], "r"), String)
+function correction_multi(args, fin, fout)
+	inputText = read(fin, String)
 	temp = split(inputText, ">")
 	temp = temp[length.(temp) .> 0]
 	temp = [split(arr, "\n") for arr in temp]
@@ -189,8 +191,28 @@ function main()
 		end
 	end
 	for j in 1:m
-		println(stdout, ">" * header[j])
-		println(stdout, String(arrc[j]))
+		println(fout, ">" * header[j])
+		println(fout, String(arrc[j]))
+	end
+end
+
+function main()
+	println(stderr, "Version " * string(PROGRAM_VERSION))
+	args = parse_commandline()
+	if args["list"] == false
+		correction_multi(args, open(args["input"], "r"), stdout)
+	else
+		temp = split(read(open(args["input"], "r"), String), "\n")
+		temp = temp[length.(temp) .> 0]
+		for i = 2:2:length(temp)
+			try
+				println(stderr, "Processing " * temp[i - 1] * "...")
+				correction_multi(args, open(temp[i - 1], "r"), open(temp[i], "w"))
+			catch
+				println(stderr, "Error happened when processing " * temp[i - 1] * ".")
+				println(stderr)
+			end
+		end
 	end
 end
 
