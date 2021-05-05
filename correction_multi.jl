@@ -2,7 +2,7 @@ R = [Dict("k"=>5, "p"=>0.25, "q"=>0.1, "L"=>30),
      Dict("k"=>9, "p"=>0.25, "q"=>0.25, "L"=>54),
      Dict("k"=>17, "p"=>0.1, "q"=>0.5, "L"=>Inf)]
 
-PROGRAM_VERSION = v"0.1.6-alpha"
+PROGRAM_VERSION = v"0.1.7-alpha"
 try
 	using ArgParse
 catch
@@ -43,7 +43,7 @@ function correction(c, output, k, X, MASK, pvalue, qvalue, threshold)
 	var = [length(arr) > 0 ? f.(arr, arr[end], 1:length(arr), length(arr)) : [] for arr in wsum]
 	wCutoff = [length(var[j]) > 0 ? wsorted[j][findmax(var[j])[2]] : 0 for j in 1:m]
 	cutoffSorted = sort([wCutoff[j] for j in 1:m if length(var[j]) > 0])
-	cutoffFloor = cutoffSorted[end - floor(Int, length(cutoffSorted) * pvalue)]
+	cutoffFloor = (pvalue >= 1) ? 0 : cutoffSorted[end - floor(Int, length(cutoffSorted) * pvalue)]
 	s = zeros(n - k + 1, m, 2)
 	tiebreaker = zeros(n - k + 1, m, 2)
 	bt = zeros(Int64, n - k + 1, m, 2)
@@ -58,7 +58,7 @@ function correction(c, output, k, X, MASK, pvalue, qvalue, threshold)
 		s = zeros(L, 2)
 		tiebreaker = zeros(L, 2)
 		bt = zeros(Int64, L, 2)
-		cutoff = max(wCutoff[j], cutoffFloor, wsorted[j][end - floor(Int, length(wsorted[j]) * qvalue)], threshold)
+		cutoff = max(wCutoff[j], cutoffFloor, (qvalue >= 1) ? 0 : wsorted[j][end - floor(Int, length(wsorted[j]) * qvalue)], threshold)
 		for i in 1:L
 			v = (wj[i] > cutoff ? 0 : 1)
 			if i == 1

@@ -1,4 +1,4 @@
-PROGRAM_VERSION = v"0.1.6-alpha"
+PROGRAM_VERSION = v"0.1.7-alpha"
 try
 	using ArgParse
 catch
@@ -55,7 +55,7 @@ function correction(fin, fout, k, X, MASK, pvalue, qvalue, threshold, verbose)
 	wCutoff = [length(var[j]) > 0 ? wsorted[j][findmax(var[j])[2]] : 0 for j in 1:m]
 	cutoffSorted = sort([wCutoff[j] for j in 1:m if length(var[j]) > 0])
 	#println(stderr, cutoffSorted)
-	cutoffFloor = cutoffSorted[end - floor(Int, length(cutoffSorted) * pvalue)]
+	cutoffFloor = (pvalue >= 1) ? 0 : cutoffSorted[end - floor(Int, length(cutoffSorted) * pvalue)]
 	#println(stderr, cutoffFloor)
 	s = zeros(n - k + 1, m, 2)
 	tiebreaker = zeros(n - k + 1, m, 2)
@@ -76,7 +76,7 @@ function correction(fin, fout, k, X, MASK, pvalue, qvalue, threshold, verbose)
 		s = zeros(L, 2)
 		tiebreaker = zeros(L, 2)
 		bt = zeros(Int64, L, 2)
-		cutoff = max(wCutoff[j], cutoffFloor, wsorted[j][end - floor(Int, length(wsorted[j]) * qvalue)], threshold)
+		cutoff = max(wCutoff[j], cutoffFloor, (qvalue >= 1) ? 0 : wsorted[j][end - floor(Int, length(wsorted[j]) * qvalue)], threshold)
 		for i in 1:L
 			v = (wj[i] > cutoff ? 0 : 1)
 			if i == 1
