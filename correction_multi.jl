@@ -173,17 +173,24 @@ function correction_multi(args, fin, fout)
 	MASK = args["mask"]
 	for r in R
 		output = []
-		correction(c, output, get(r, "k", 9), args["any"], MASK, get(r, "p", 0), get(r, "q", 0), args["cutoff"])
+		correction(c, output, get(r, "k", 9), args["any"], '*', get(r, "p", 0), get(r, "q", 0), args["cutoff"])
 		L = get(r, "L", Inf)
 		for j in 1:m
 			start = 0
+			cnt = 0
 			for i in 1:n
-				if start == 0 && output[j][i] == MASK
+				if start == 0 && output[j][i] == '*'
 					start = i
+					cnt = 1
 				end
-				if start != 0 && output[j][i] != MASK
-					if i - start <= L
-						arrc[j][start:i-1] .= MASK
+				if start != 0 && output[j][i] == 'X'
+					cnt += 1
+				end
+				if start != 0 && output[j][i] != '*' && output[j][i] != '-'
+					if cnt < L
+						for k in start:i-1
+							arrc[j][k] = (output[j][i] == '-') ? '-' : MASK
+						end
 					end
 					start = 0
 				end
