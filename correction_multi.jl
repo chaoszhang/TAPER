@@ -189,7 +189,7 @@ function correction_multi(args, fin, fout)
 				if start != 0 && output[j][i] != '*' && output[j][i] != '-'
 					if cnt < L
 						for k in start:i-1
-							arrc[j][k] = (output[j][i] == '-') ? '-' : MASK
+							arrc[j][k] = (output[j][k] == '-') ? '-' : MASK
 						end
 					end
 					start = 0
