@@ -183,7 +183,7 @@ function correction_multi(args, fin, fout)
 					start = i
 					cnt = 1
 				end
-				if start != 0 && output[j][i] == 'X'
+				if start != 0 && output[j][i] == '*'
 					cnt += 1
 				end
 				if start != 0 && output[j][i] != '*' && output[j][i] != '-'
@@ -193,6 +193,7 @@ function correction_multi(args, fin, fout)
 						end
 					end
 					start = 0
+					cnt = 0
 				end
 			end
 		end
