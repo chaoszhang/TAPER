@@ -11,7 +11,7 @@ Please download Julia [here](https://julialang.org/downloads/) and unzip the fil
 tar -xvzf julia*.tar.gz
 ```
 
-Luckily, Julia doesn't requrie installation on most platforms. You just download it and you have the tool. 
+Luckily, Julia doesn't require installation on most platforms. You just download it and you have the tool. 
 
 In the following, we use `JULIA_FOLDER` for the place you have copied the julia package. Change it to the actual place you used. 
 
@@ -55,8 +55,8 @@ path_to_output_of_input_file_2
 
 For every two lines in `LIST`:
 
-- The first line should be the path to the input
-- The second line should be the path to the output of the previous input
+- The first line should be the path to a input file
+- The second line should be the path to the output of the previous input file
 
 For example, cd to the directory containing correction.jl
 
@@ -66,7 +66,7 @@ JULIA_FOLDER/bin/julia correction_multi.jl -l sample_inputs/files2run.txt
 
 ### Running on DNA/RNA
 
-You probably want to mask erroneous regions with `N` using `-m` and set "ANY" character to `N` instead of `X` to treat `N` as a missing value using `-n`. 
+You probably want to mask erroneous regions with `N` using `-m` and set "ANY" character to `N` instead of `X` to treat `N` as a missing value using `-a`. 
 
 ``` bash
 JULIA_FOLDER/bin/julia correction_multi.jl -m N -a N INPUTNAME > OUTPUTNAME
