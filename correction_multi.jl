@@ -1,8 +1,8 @@
-R = [Dict("k"=>5, "p"=>0.25, "q"=>0.1, "L"=>30),
+global R = [Dict("k"=>5, "p"=>0.25, "q"=>0.1, "L"=>30),
      Dict("k"=>9, "p"=>0.25, "q"=>0.25, "L"=>54),
      Dict("k"=>17, "p"=>0.1, "q"=>0.5, "L"=>Inf)]
 
-PROGRAM_VERSION = v"0.1.7-alpha"
+PROGRAM_VERSION = v"0.1.8-beta"
 try
 	using ArgParse
 catch
@@ -152,6 +152,9 @@ function parse_commandline()
 			help = "set score cutoff to control the minimum aggressiveness of masking (should be > 1)"
 			arg_type = Float64
 			default = 3.0
+		"--parameter", "-p"
+			help = "(Advanced) load the list of k, p, q, and L from the input parameter file"
+			arg_type = String
 		"input"
 			help = "a fasta file as input"
 			required = true
@@ -212,6 +215,9 @@ end
 function main()
 	println(stderr, "Version " * string(PROGRAM_VERSION))
 	args = parse_commandline()
+	if isnothing(args["parameter"]) == false
+		global R = eval(Meta.parse(read(open(args["parameter"], "r"), String)))
+	end
 	if args["list"] == false
 		correction_multi(args, open(args["input"], "r"), stdout)
 	else
