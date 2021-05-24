@@ -161,3 +161,20 @@ A cutoff (make sense to > 1) to control aggressiveness of error detection. The *
 ``` bash
 JULIA_FOLDER/bin/julia correction_multi.jl -c 10 sample_inputs/3.fasta > sample_inputs/3.out.fasta
 ```
+
+### (Advanced) `-p`
+
+Load the list of k, p, q, and L from the input parameter file. Please refer to the paper for usage for multi-k. The input parameter file should contain a list of dictonaries with key words k, p, q, and L (in Julia format, see below). By default, the input parameter is set to be:
+
+```
+[Dict("k"=>5, "p"=>0.25, "q"=>0.1, "L"=>30),
+Dict("k"=>9, "p"=>0.25, "q"=>0.25, "L"=>54),
+Dict("k"=>17, "p"=>0.1, "q"=>0.5, "L"=>Inf)]
+```
+
+
+For example, if you want TAPER to work on a single k, you can try:
+
+``` bash
+JULIA_FOLDER/bin/julia correction_multi.jl -p sample_inputs/parameter.txt sample_inputs/3.fasta
+```
