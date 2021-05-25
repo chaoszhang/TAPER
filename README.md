@@ -85,20 +85,6 @@ JULIA_FOLDER/bin/julia correction_multi.jl -l sample_inputs/files2run.txt
 ```
 
 
-### Running the single-k version
-
-While we recommend the default multi-k version, the single k version is also available. 
-
-
-``` bash
-JULIA_FOLDER/bin/julia correction.jl INPUTNAME > OUTPUTNAME
-```
-
-You can adjust `-k`. For example, for DNA, you may want a larger k than default.
-
-``` bash
-JULIA_FOLDER/bin/julia correction.jl -k 11 -a N -m N INPUTNAME > OUTPUTNAME
-```
 
 ## Commandline arguments 
 
@@ -116,7 +102,7 @@ JULIA_FOLDER/bin/julia correction_multi.jl [-l] [-m MASK] [-a ANY] [-c CUTOFF] i
   ``` bash
   JULIA_FOLDER/bin/julia correction_multi.jl sample_inputs/3.fasta
   ```
-  Also, you can redirect your output to an file. Try:
+  Also, you can redirect your output to a file. Try:
   ``` bash
   JULIA_FOLDER/bin/julia correction_multi.jl sample_inputs/3.fasta > sample_inputs/3.out.fasta
   ```
@@ -164,7 +150,14 @@ JULIA_FOLDER/bin/julia correction_multi.jl -c 10 sample_inputs/3.fasta > sample_
 
 ### (Advanced) `-p`
 
-Load the list of k, p, q, and L from the input parameter file. Please refer to the paper for usage for multi-k. The input parameter file should contain a list of dictonaries with key words k, p, q, and L (in Julia format, see below). By default, the input parameter is set to be:
+Load the list of `k`, `p`, `q`, and `L` from the input parameter file. Please refer to the paper for usage for the meaning of these parameters and multi-k setting. Very roughly speaking,
+* `k` is the size of the kmer. 
+* `p` is the maximum proportion of a site that could be removed. 
+* `q` is the maximum proportion of a sequence that could be removed. 
+* `L` is a hard upper bound on the length of sequences that will be removed. 
+The input parameter file should contain a list of dictonaries with key words k, p, q, and L (in Julia format, see below). TAPER removes the union of all the parameters described in the list. 
+
+By default, the input parameter is set to be:
 
 ```
 [Dict("k"=>5, "p"=>0.25, "q"=>0.1, "L"=>30),
@@ -172,8 +165,17 @@ Dict("k"=>9, "p"=>0.25, "q"=>0.25, "L"=>54),
 Dict("k"=>17, "p"=>0.1, "q"=>0.5, "L"=>Inf)]
 ```
 
+This means that TAPER is run with k equals to 5, 9, and 17, each with a different p and q. Smaller k values are only used to catch short errors (<=30 and <=54, respectively for `k=5` and `k=9`). You can change these settings. 
+* To get more aggresive filtering, you can increase `p` (to allow removal of more than 1/4 of a column) or `q` (to allow removal of more than half of a sequence). 
+* To make the filtering less aggressive, you can lower `p` or `q` or lower `L` values. 
+* 
+However, it does seem a bit hard to optimize all these parameters. Thus, we suggest that most users simply use the defaults or use `-c` to adjust aggressiveness. If you adjust these parameters, some experimentation is needed. 
 
-For example, if you want TAPER to work on a single k, you can try:
+#### Single-k version. 
+
+While we recommend the default multi-k version, you can have a single-k version by having only one k value in the `-p` parameter. 
+
+For example, you can run:
 
 ``` bash
 JULIA_FOLDER/bin/julia correction_multi.jl -p sample_inputs/parameter.txt sample_inputs/3.fasta
