@@ -2,7 +2,7 @@ global R = [Dict("k"=>5, "p"=>0.25, "q"=>0.1, "L"=>30),
      Dict("k"=>9, "p"=>0.25, "q"=>0.25, "L"=>54),
      Dict("k"=>17, "p"=>0.1, "q"=>0.5, "L"=>Inf)]
 
-PROGRAM_VERSION = v"0.1.8-beta"
+PROGRAM_VERSION = v"1.0.0"
 try
 	using ArgParse
 catch
