@@ -2,7 +2,7 @@ global R = [Dict("k"=>5, "p"=>0.25, "q"=>0.1, "L"=>30),
      Dict("k"=>9, "p"=>0.25, "q"=>0.25, "L"=>54),
      Dict("k"=>17, "p"=>0.1, "q"=>0.5, "L"=>Inf)]
 
-PROGRAM_VERSION = v"1.0.1"
+PROGRAM_VERSION = v"1.0.2"
 try
 	using ArgParse
 catch
@@ -165,6 +165,7 @@ end
 
 function correction_multi(args, fin, fout)
 	inputText = read(fin, String)
+	inputText = string(split(inputText, "\r")...)
 	temp = split(inputText, ">")
 	temp = temp[length.(temp) .> 0]
 	temp = [split(arr, "\n") for arr in temp]
